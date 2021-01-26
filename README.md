@@ -6,7 +6,8 @@ I'll be putting my scripts here, since I always seem to lose them.
 
 This thing is used to break down a GeoJSON file into smaller files related to each other.
 In my case, smaller files with GeoJSON objects whose `codigo_act`
-property was the same, because 70M files are not fun. The script relies heavily (mostly) on [jq](https://github.com/stedolan/jq), which allows you to
+property was the same (as per my data's [hierarchy](https://www.inegi.org.mx/app/scian/)), 
+because 70M files are not fun. The script relies heavily (mostly) on [jq](https://github.com/stedolan/jq), which allows you to
 reshape and move JSONs around very easily. 
 
 I don't know if the script is efficient, to be honest. Probably not, but it does go through a 187,281 line file in about 30 seconds. Good enough for me.
