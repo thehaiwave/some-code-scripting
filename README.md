@@ -90,3 +90,56 @@ Separated files:
   ]
 }
 ```
+
+- **create_ind_objects.py**
+
+So here's the thing, the data that I'm working with is way too granular. I'm not going to manually type the name of each of the fiels, no way. Also the
+chosen fields are arbitrary so I might add or delete a few, and I need it in a certain format. 
+
+Anyway, this script is pretty simple. I give it a list of ID's corresponding to the data fields whose name I want, and out comes an array of JSON objects
+with both the name and the ID of the field. It's pretty disgusting how I did it, so I'm going to explain it. So basically, the data is divided like this:
+
+```unicode
+      ┌─111
+      │     ┌─1121
+ ┌─11─┼─112─┴─1122
+ │    └─113
+ │          ┌─2311
+─┼─23───231─┼─2312
+ │          └─232
+ ├─31───NULL
+ │          ┌─4611
+ └─46───461─┴─4612
+ 
+  [0]   [1]    [2]
+```
+
+You get the idea. When the website that has the data begins to load, it makes an AJAX call to some external API. At the beginning, it only fetches
+the level 0 IDs. It is only when you click on one of them that the site calls that ID's children (level 1), and when you click on a level 1 ID,
+it fetches that ID's children (a level 2 ID), and so on. The tricky part, then, is how to get, say, a level 3 ID. You could try to use something like `curl`
+or some PHP script to get the site's HTML, but that will only get you the markup, so what can we do?
+
+The answer lies in the URL endpoints the site uses. The initial endpoint looks like this:
+
+```
+https://www.inegi.org.mx/app/api/clasificadores/interna_v1/frontArbol/listaRamas/?proy=75&indica=0&_=1611671251717
+```
+
+We need to take note of a couple of things. First, it has an `.mx` TLD, so we should already be questioning the validity of the data. Secondly, it has a 
+parameter called `indica`. That sure does sound a lot like the indicators (IDs) that we are looking for. Let's see what the URL looks like when we click
+on a level 0 ID, let's say '11'.
+
+```
+https://www.inegi.org.mx/app/api/clasificadores/interna_v1/frontArbol/listaRamas/?proy=75&indica=11&_=1611671251718
+```
+Ok, so it would seem like that parameter tells the endpoint which ID's children to load. However, also notice that the very last parameter (`_`) also changed.
+In fact, it has increased by exactly one. At this point it becomes obvious how that endpoint works. We need to provide both the ID whose children
+we want to see, and the *depth*, so to speak, at which those children are. 
+
+It's interesting to note that the IDs are organized in such a way that each sub-level adds exactly one more number to the ID, and so it's easy to figure out
+which level we should look up, given that our base level (in the URL) is 1611671251717. It is only when you have the correct URL that you can finally
+invoke `curl` to fetch the IDs. You then go through the response and move indexes around to see if the ID you want is in there, or if you should
+go deeper. 
+
+Come to think of it, this script has an issue. I used a `zip()` function because I knew that the IDs I was looking for existed. If one (or many) of the
+IDs you provide initially do **NOT** exist, the length of the arrays fed to the `zip()` function won't match. Will fix later.
