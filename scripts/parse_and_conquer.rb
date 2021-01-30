@@ -33,8 +33,8 @@ file_lines = File.readlines('../data/files/contenido.txt', chomp: true)
 file_lines.each_with_index do |item, index|
 	if source_codes.include?(item)
 		sick_object['meta']['title'] = file_lines[index+1]
-		sick_object['data']['label'] = STATE_NUM + item		
-		sick_objects.push(sick_object)
+		sick_object['data']['label'] = item.sub('ee', STATE_NUM)	
+		sick_objects.push(JSON[sick_object])
 	end	
 end
 
