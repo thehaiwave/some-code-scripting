@@ -143,3 +143,50 @@ go deeper.
 
 Come to think of it, this script has an issue. I used a `zip()` function because I knew that the IDs I was looking for existed. If one (or many) of the
 IDs you provide initially do **NOT** exist, the length of the arrays fed to the `zip()` function won't match. Will fix later.
+
+
+- **parse_and_conquer.rb**
+
+Doesn't do much. It pull data from some files and creates JSON objects with that data. The exact JSON structure can be changed.
+
+Now, if you look at the code you'll notice that I have a variable that stores the JSON structure. I then iterate through the data I want, change that original 
+JSON structure and fill it with my data, and finally convert it to a real JSON object and push that newly created object to an array. Originally, I didn't cast 
+the structure variable as a JSON, I just pushed it. This resulted in an array of elements that all referenced the same object; remember, I'm not copying the 
+original JSON structure variable, I'm just chaning it. The problem with this array, then, was that ALL of the elements would change when the reference was 
+updated, so instead of having:
+
+```ruby
+#FIRST ITERATION
+some_array = [ obj1 ]
+
+
+#SECOND ITERATION
+some_array = [ obj1, obj2 ]
+
+#THIRD ITERATION
+some_array = [ obj1, obj2, obj3 ]
+
+```
+You end up with:
+```ruby
+#FIRST ITERATION
+some_array = [ obj1 ]
+
+
+#SECOND ITERATION
+some_array = [ obj2, obj2 ]
+
+#THIRD ITERATION
+some_array = [ obj3, obj3, obj3 ]
+```
+
+The first of my problems came when I took more than 10 minutes to realize that this was the issue. Once I knew what it was (thanks to some very nice S.O. people), 
+the solution was straightforward: just duplicate the original JSON structure variable each iteration. Ruby provides both #dup and #clone to copy objects. There 
+are some differences between them, but the point is that I ended up duplicating the object like I said earlier. Now, Ruby also lets you see the ObjectID of an 
+object. So, naturally, you'd want to see that as the script is running so you can track the object references. Color me surprised when the ObjectIDs of the 
+elements that I pushed to the array were different, but the reference issue didn't go away. I honestly, truthfully, and frankly have no idea why that is. There 
+has to be something about the way Ruby handles binding that I'm missing, but casting the JSON structure as a JSON object creates a new object each time I push to 
+the array, so that solves the issue, but it is still not really ideal because I have to then run some RegEx functions on the resulting object because Ruby does 
+some weird formatting things to it.
+
+
